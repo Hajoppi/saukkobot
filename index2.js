@@ -9,7 +9,7 @@ const hour = 7;
 var posted = false;
 var regExp = /"\/r\/Otters\/(.+)"[ ]/;
 
-var chatID = null;
+let chatID = new Set();
 
 var options_imgur = {
     host: 'imgur.com',
@@ -46,7 +46,8 @@ function getUpdates(){
         });
         res.on('end', function(){
             var json = JSON.parse(body);
-            chatID = json['result'][0]['message']['chat']['id'];
+            var id = json['result'][0]['message']['chat']['id'];
+            chatID.add(id);
         });
     });
 }
@@ -63,7 +64,6 @@ function sendPhoto(chat, photo_url){
 
 }
 setInterval(function () {
-    //console.log("getting updates");
     getUpdates();
     var date = new Date();
     var currentHours = date.getHours();
@@ -73,7 +73,9 @@ setInterval(function () {
             console.log("sending photo");
             console.log(arr);
             var rand = arr[Math.floor(Math.random() * arr.length)];
-            sendPhoto(chatID, 'http://imgur.com/'+ rand + '.jpg');
+            chatID.forEach(function(i){
+                sendPhoto(i, 'http://imgur.com/'+ rand + '.jpg');
+            }
         });
     }
     if (currentHours !== hour){
