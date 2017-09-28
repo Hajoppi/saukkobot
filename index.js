@@ -5,9 +5,9 @@
 
 
 const TeleBot = require('telebot'),
-    http = require('http');
+    https = require('https');
 const bot = new TeleBot('');
-const hour = 17;
+const hour = 10;
 var posted = false;
 var regExp = /"\/r\/Otters\/(.+)"[ ]/;
 
@@ -16,24 +16,22 @@ var chatID = new Set();
 
 var options = {
     host: 'imgur.com',
-    port: 80,
+    port: 443,
     path: '/r/Otters'
 };
 function getData(callback){
     var arr = [];
     console.log("getting data");
-    http.get(options, function(res) {
-        console.log(res.body);
+    https.get(options, function(res) {
         res.on('data', function(chunk){
-            console.log("Got Chunk");
             var str = String(chunk).match(regExp);
             if(str !== null){
-                console.log(str[i]);
+                console.log(str[1]);
                 arr.push(str[1]);
             }
         });
         res.on('end', function(){
-            callback(arr)
+            callback(arr);
         });
     }).on('error', function(e) {
         console.log("Got error: " + e.message);
@@ -48,7 +46,9 @@ bot.on('/start', function(msg) {
 
 bot.on('/stop', function(msg) {
     chatID.delete(msg.from.id);
+    return msg.reply.text("Bot stopped");
 });
+
 
 bot.on('tick', function(){
     var date = new Date();
@@ -57,7 +57,7 @@ bot.on('tick', function(){
         posted = true;
         getData(function(arr){
             var rand = arr[Math.floor(Math.random() * arr.length)];
-            for(i in chatID){
+            for(let i of chatID){
                 return bot.sendPhoto(i, 'http://imgur.com/'+ rand + '.jpg');
             }
         });
