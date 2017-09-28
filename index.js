@@ -6,7 +6,7 @@
 
 const TeleBot = require('telebot'),
     http = require('http');
-const bot = new TeleBot('424665228:AAHyFzFnv8trrk_RdcIuM2SKr58I-vFy1Lw');
+const bot = new TeleBot('');
 const hour = 17;
 var posted = false;
 var regExp = /"\/r\/Otters\/(.+)"[ ]/;
