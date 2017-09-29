@@ -19,34 +19,49 @@ var options = {
     port: 443,
     path: '/r/Otters'
 };
-function getData(callback){
+function getData(ids,callback){
     var arr = [];
-    console.log("getting data");
     https.get(options, function(res) {
         res.on('data', function(chunk){
             var str = String(chunk).match(regExp);
             if(str !== null){
-                console.log(str[1]);
                 arr.push(str[1]);
             }
         });
         res.on('end', function(){
-            callback(arr);
+            callback(arr,ids);
         });
     }).on('error', function(e) {
         console.log("Got error: " + e.message);
     });
 }
 
+function postData(arr, ids){
+    var rand = arr[Math.floor(Math.random() * arr.length)];
+    https.get('https://i.imgur.com/'+rand + '.jpg', function(res){
+        if(res.statusCode == 200){
+            for(let i of ids){
+                return bot.sendPhoto(i, 'http://imgur.com/'+ rand + '.jpg');
+            }
+        }
+        else{
+            postData(arr, ids);
+        }
+    });
+}
+
 bot.on('/start', function(msg) {
-    chatID.add(msg.from.id);
-    console.log("id gotten " + msg.from.id);
+    chatID.add(msg.chat.id);
     return msg.reply.text("Bot started");
 });
 
 bot.on('/stop', function(msg) {
-    chatID.delete(msg.from.id);
+    chatID.delete(msg.chat.id);
     return msg.reply.text("Bot stopped");
+});
+
+bot.on('/getMeSaukko', function(msg){
+    getData([msg.chat.id],postData);
 });
 
 
@@ -55,12 +70,7 @@ bot.on('tick', function(){
     var currentHours = date.getHours();
     if (currentHours === hour && !posted && chatID.size > 0 ){
         posted = true;
-        getData(function(arr){
-            var rand = arr[Math.floor(Math.random() * arr.length)];
-            for(let i of chatID){
-                return bot.sendPhoto(i, 'http://imgur.com/'+ rand + '.jpg');
-            }
-        });
+        getData(chatID, postData);
     }
     if (currentHours !== hour){
         posted = false;
