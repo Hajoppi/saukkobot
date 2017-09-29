@@ -9,7 +9,7 @@ const TeleBot = require('telebot'),
     htmlparser = require("htmlparser2"),
     token = require("./config");
 const bot = new TeleBot(token);
-const hour = 10;
+const hour = 7;
 var posted = false;
 var regExp = /"\/r\/Otters\/(.+)"[ ]/;
 
