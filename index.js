@@ -7,7 +7,7 @@
 const TeleBot = require('telebot'),
     https = require('https'),
     htmlparser = require("htmlparser2"),
-    token = require("./cfg/config");
+    token = require("./config");
 const bot = new TeleBot(token);
 const hour = 10;
 var posted = false;
