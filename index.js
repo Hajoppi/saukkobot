@@ -5,8 +5,10 @@
 
 
 const TeleBot = require('telebot'),
-    https = require('https');
-const bot = new TeleBot('');
+    https = require('https'),
+    htmlparser = require("htmlparser2"),
+    token = require("./cfg/config");
+const bot = new TeleBot(token);
 const hour = 10;
 var posted = false;
 var regExp = /"\/r\/Otters\/(.+)"[ ]/;
@@ -23,10 +25,15 @@ function getData(ids,callback){
     var arr = [];
     https.get(options, function(res) {
         res.on('data', function(chunk){
-            var str = String(chunk).match(regExp);
-            if(str !== null){
-                arr.push(str[1]);
-            }
+            var parser = new htmlparser.Parser({
+                onopentag: function(name, attr){
+                    if(name === 'div' && attr.class === "post"){
+                        arr.push(attr.id);
+                    }
+                }
+            }, {decodeEntities: true});
+            parser.write(chunk);
+            parser.end();
         });
         res.on('end', function(){
             callback(arr,ids);
