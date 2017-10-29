@@ -6,55 +6,60 @@
 
 const TeleBot = require('telebot'),
     https = require('https'),
-    htmlparser = require("htmlparser2"),
-    token = require("./config");
+    config = require("./config"),
+    token = config.botToken,
+    api = config.clientID;
 const bot = new TeleBot(token);
 const hour = 7;
+var imageList = [];
+var etag = "";
 var posted = false;
-var regExp = /"\/r\/Otters\/(.+)"[ ]/;
-
 
 var chatID = new Set();
 
 var options = {
-    host: 'imgur.com',
+    host: 'api.imgur.com',
     port: 443,
-    path: '/r/Otters'
+    path: '/3/gallery/r/Otters/time/all',
+    headers:{
+        'Authorization': 'Client-ID e7cc4794532273b',
+        'If-None-Match': etag,
+    },
 };
-function getData(ids,callback){
-    var arr = [];
+
+function getData(ids, callback){
+    var body = ""
     https.get(options, function(res) {
-        res.on('data', function(chunk){
-            var parser = new htmlparser.Parser({
-                onopentag: function(name, attr){
-                    if(name === 'div' && attr.class === "post"){
-                        arr.push(attr.id);
-                    }
-                }
-            }, {decodeEntities: true});
-            parser.write(chunk);
-            parser.end();
-        });
-        res.on('end', function(){
-            callback(arr,ids);
-        });
-    }).on('error', function(e) {
+        console.log(res.statusCode)
+        if(res.statusCode == 200){
+            etag = res.headers["etag"];
+            res.on('data', function(chunk){
+                body += chunk;
+            });
+            res.on('end', function(){
+                imageList = JSON.parse(body).data;
+                callback(ids);
+            });
+        }
+        else{
+            res.on('end', function(){
+                callback(ids);
+            });
+        }
+        }).on('error', function(e) {
         console.log("Got error: " + e.message);
     });
 }
 
-function postData(arr, ids){
-    var rand = arr[Math.floor(Math.random() * arr.length)];
-    https.get('https://i.imgur.com/'+rand + '.jpg', function(res){
-        if(res.statusCode == 200){
-            for(let i of ids){
-                return bot.sendPhoto(i, 'http://imgur.com/'+ rand + '.jpg');
-            }
+function postData(ids){
+    var rand = imageList[Math.floor(Math.random() * imageList.length)];
+    for(let i of ids){
+        if(rand.animated == true){
+            return bot.sendVideo(i, rand.mp4);
+        }else{
+            return bot.sendPhoto(i, rand.link);
         }
-        else{
-            postData(arr, ids);
-        }
-    });
+    }
 }
 
 bot.on('/start', function(msg) {
@@ -68,7 +73,7 @@ bot.on('/stop', function(msg) {
 });
 
 bot.on('/getMeSaukko', function(msg){
-    getData([msg.chat.id],postData);
+    getData([msg.chat.id], postData);
 });
 
 
