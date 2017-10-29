@@ -22,7 +22,7 @@ var options = {
     port: 443,
     path: '/3/gallery/r/Otters/time/all',
     headers:{
-        'Authorization': 'Client-ID e7cc4794532273b',
+        'Authorization': 'Client-ID '+api,
         'If-None-Match': etag,
     },
 };
