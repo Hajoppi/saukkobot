@@ -72,7 +72,7 @@ bot.on('/stop', function(msg) {
     return msg.reply.text("Bot stopped");
 });
 
-bot.on('/getMeSaukko', function(msg){
+bot.on(['/getMeSaukko', '/saukko'], function(msg){
     getData([msg.chat.id], postData);
 });
 
