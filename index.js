@@ -16,11 +16,11 @@ var etag = "";
 var posted = false;
 
 var chatID = new Set();
-
+var sub = "Otters";
 var options = {
     host: 'api.imgur.com',
     port: 443,
-    path: '/3/gallery/r/Otters/time/all',
+    path: '/3/gallery/r/'+sub+'/time/all',
     headers:{
         'Authorization': 'Client-ID '+api,
         'If-None-Match': etag,
@@ -74,6 +74,11 @@ bot.on('/stop', function(msg) {
 
 bot.on(['/getMeSaukko', '/saukko'], function(msg){
     getData([msg.chat.id], postData);
+});
+
+bot.on('/change', function(msg) {
+    sub = msg.text.substring(8);
+    options.path = '/3/gallery/r/'+sub+'/time/all';
 });
 
 
